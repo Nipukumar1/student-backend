@@ -11,7 +11,10 @@ const app = express();
 app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE'], allowedHeaders: ['Content-Type','Authorization'] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Frontend path
+const frontendPath = path.join(__dirname, '..', 'frontend');
+app.use(express.static(frontendPath));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -21,31 +24,42 @@ mongoose.connect(process.env.MONGODB_URI)
     })
     .catch(err => console.error('❌ MongoDB Error:', err));
 
-// Auto-create admin from .env
 async function createDefaultAdmin() {
     try {
         const User = require('./models/User');
+        const bcrypt = require('bcryptjs');
         const adminEmail = process.env.ADMIN_EMAIL;
         const adminPassword = process.env.ADMIN_PASSWORD;
+        if (!adminEmail || !adminPassword) return;
 
-        if (!adminEmail || !adminPassword) {
-            console.log('⚠️  ADMIN_EMAIL or ADMIN_PASSWORD not in .env — skipping');
-            return;
-        }
-
-        const existing = await User.findOne({ email: adminEmail });
+        const existing = await User.findOne({ email: adminEmail }).select('+password');
         if (!existing) {
-            await User.create({ name: 'Admin', email: adminEmail, password: adminPassword, role: 'admin' });
+            // Create with pre-hashed password
+            const hashedPassword = await bcrypt.hash(adminPassword, 10);
+            const admin = new (require('./models/User'))({
+                name: 'Admin',
+                email: adminEmail,
+                password: hashedPassword,
+                role: 'admin'
+            });
+            // Save without triggering pre-save hook double hash
+            await mongoose.model('User').collection.insertOne({
+                name: 'Admin',
+                email: adminEmail,
+                password: hashedPassword,
+                role: 'admin',
+                phone: '',
+                createdAt: new Date()
+            });
             console.log(`✅ Admin created: ${adminEmail}`);
-        } else if (existing.role !== 'admin') {
-            existing.role = 'admin';
-            await existing.save();
-            console.log(`✅ Admin role updated: ${adminEmail}`);
         } else {
-            console.log(`✅ Admin already exists: ${adminEmail}`);
+            if (existing.role !== 'admin') {
+                await mongoose.model('User').updateOne({ email: adminEmail }, { role: 'admin' });
+            }
+            console.log(`✅ Admin exists: ${adminEmail}`);
         }
     } catch (err) {
-        console.error('⚠️  Admin setup error:', err.message);
+        console.error('⚠️ Admin setup error:', err.message);
     }
 }
 
@@ -70,9 +84,17 @@ app.post('/api/make-admin', async (req, res) => {
     }
 });
 
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
+});
+
 // Serve frontend
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    const indexPath = path.join(__dirname, '..', 'frontend', 'index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) res.status(200).json({ message: 'InfinityStore API is running ✅' });
+    });
 });
 
 const PORT = process.env.PORT || 5000;
