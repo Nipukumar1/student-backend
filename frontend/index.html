@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfinityStore — Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ink: #0f0f0f;
+            --paper: #fafaf7;
+            --accent: #e84c1e;
+            --muted: #6b6b6b;
+            --border: #e0ddd8;
+            --card: #ffffff;
+        }
+        body {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+        }
+        .left-panel {
+            background: var(--ink);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(232,76,30,0.3) 0%, transparent 70%);
+            bottom: -100px; right: -100px;
+        }
+        .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 60px; }
+        .brand-icon {
+            width: 48px; height: 48px;
+            background: var(--accent);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-icon i { color: white; font-size: 22px; }
+        .brand-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: white; }
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 52px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        .hero-title span { color: var(--accent); }
+        .hero-sub { color: #888; font-size: 16px; line-height: 1.7; max-width: 400px; }
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 40px;
+        }
+        .form-box { width: 100%; max-width: 400px; }
+        .form-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+        .form-sub { color: var(--muted); margin-bottom: 36px; }
+        .field { margin-bottom: 20px; }
+        .field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 8px; letter-spacing: 0.03em; }
+        .field input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            background: white;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .field input:focus { border-color: var(--accent); }
+        .field-icon { position: relative; }
+        .field-icon i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        .field-icon input { padding-left: 44px; }
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Syne', sans-serif;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(232,76,30,0.35); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .toggle-link { text-align: center; margin-top: 24px; color: var(--muted); font-size: 14px; }
+        .toggle-link a { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
+        .error-msg { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 16px; display: none; }
+        .error-msg.show { display: block; }
+        .hidden { display: none; }
+        @media (max-width: 768px) {
+            body { grid-template-columns: 1fr; }
+            .left-panel { display: none; }
+            .right-panel { padding: 40px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-infinity"></i></div>
+            <span class="brand-name">InfinityStore</span>
+        </div>
+        <h1 class="hero-title">Shop<br>Without<br><span>Limits.</span></h1>
+        <p class="hero-sub">500+ products across 10 categories. Free shipping, real-time tracking, and a seamless checkout experience.</p>
+    </div>
+    <div class="right-panel">
+        <div class="form-box">
+            <!-- Login -->
+            <div id="loginSection">
+                <h2 class="form-title">Welcome back</h2>
+                <p class="form-sub">Sign in to your account</p>
+                <div class="error-msg" id="loginError"></div>
+                <div class="field field-icon">
+                    <label>Email Address</label>
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="loginEmail" placeholder="you@example.com">
+                </div>
+                <div class="field field-icon">
+                    <label>Password</label>
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <button class="submit-btn" id="loginBtn" onclick="login()">Sign In</button>
+                <div class="toggle-link">Don't have an account? <a onclick="toggleForm(false)">Register</a></div>
+            </div>
+            <!-- Register -->
+            <div id="registerSection" class="hidden">
+                <h2 class="form-title">Create account</h2>
+                <p class="form-sub">Join InfinityStore today</p>
+                <div class="error-msg" id="registerError"></div>
+                <div class="field field-icon">
+                    <label>Full Name</label>
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="regName" placeholder="Your name">
+                </div>
+                <div class="field field-icon">
+                    <label>Email Address</label>
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="regEmail" placeholder="you@example.com">
+                </div>
+                <div class="field field-icon">
+                    <label>Password</label>
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPassword" placeholder="Min 6 characters">
+                </div>
+                <button class="submit-btn" id="registerBtn" onclick="register()">Create Account</button>
+                <div class="toggle-link">Already have an account? <a onclick="toggleForm(true)">Sign in</a></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://student-backend-detj.onrender.com';  // same origin — backend serves frontend
+
+        function toggleForm(showLogin) {
+            document.getElementById('loginSection').classList.toggle('hidden', !showLogin);
+            document.getElementById('registerSection').classList.toggle('hidden', showLogin);
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errDiv = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            errDiv.classList.remove('show');
+
+            if (!email || !password) { errDiv.textContent = 'Please fill all fields'; errDiv.classList.add('show'); return; }
+
+            btn.disabled = true; btn.textContent = 'Signing in...';
+            try {
+                const res = await fetch(`${API}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { errDiv.textContent = data.message || 'Login failed'; errDiv.classList.add('show'); return; }
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userEmail', data.user.email);
+                localStorage.setItem('userRole', data.user.role);
+                localStorage.setItem('userId', data.user.id);
+
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errDiv.textContent = 'Server error. Try again.'; errDiv.classList.add('show');
+            } finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+        }
+
+        async function register() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const errDiv = document.getElementById('registerError');
+            const btn = document.getElementById('registerBtn');
+            errDiv.classList.remove('show');
+
+            if (!name || !email || !password) { errDiv.textContent = 'Please fill all fields'; errDiv.classList.add('show'); return; }
+            if (password.length < 6) { errDiv.textContent = 'Password must be 6+ characters'; errDiv.classList.add('show'); return; }
+
+            btn.disabled = true; btn.textContent = 'Creating account...';
+            try {
+                const res = await fetch(`${API}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { errDiv.textContent = data.message || 'Registration failed'; errDiv.classList.add('show'); return; }
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userEmail', data.user.email);
+                localStorage.setItem('userRole', data.user.role);
+                localStorage.setItem('userId', data.user.id);
+
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errDiv.textContent = 'Server error. Try again.'; errDiv.classList.add('show');
+            } finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+        }
+
+        // If already logged in, redirect
+        if (localStorage.getItem('isLoggedIn')) window.location.href = 'dashboard.html';
+    </script>
+</body>
+</html>
