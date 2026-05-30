@@ -14,9 +14,9 @@ function protect(req, res, next) {
             if (!user) return res.status(401).json({ message: 'User not found' });
             req.user = user;
             next();
-        });
-    } catch {
-        res.status(401).json({ message: 'Token invalid' });
+        }).catch(err => res.status(500).json({ message: err.message }));
+    } catch (err) {
+        res.status(401).json({ message: 'Token invalid', error: err.message });
     }
 }
 
@@ -36,6 +36,7 @@ router.post('/register', async (req, res) => {
             user: { id: user._id, name: user.name, email: user.email, role: user.role }
         });
     } catch (err) {
+        console.error('Register error:', err.message);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
@@ -43,16 +44,31 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
+        console.log('Login attempt:', req.body.email);
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user || !(await user.comparePassword(password)))
+
+        if (!email || !password)
+            return res.status(400).json({ message: 'Email and password required' });
+
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        console.log('User found:', user ? 'yes' : 'no');
+
+        if (!user)
             return res.status(401).json({ message: 'Invalid email or password' });
+
+        const isMatch = await user.comparePassword(password);
+        console.log('Password match:', isMatch);
+
+        if (!isMatch)
+            return res.status(401).json({ message: 'Invalid email or password' });
+
         res.json({
             token: generateToken(user._id),
             user: { id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone }
         });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Login error:', err.message);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
@@ -71,7 +87,7 @@ router.put('/profile', protect, async (req, res) => {
         await user.save();
         res.json({ message: 'Profile updated', user: { name: user.name, email: user.email, phone: user.phone } });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
