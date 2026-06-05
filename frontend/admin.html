@@ -517,7 +517,8 @@
             document.getElementById('sideOrderCount').textContent = currentStats.total || 0;
             document.getElementById('resultsCount').textContent = `${filtered.length} orders`;
         } catch (err) {
-            document.getElementById('ordersBody').innerHTML = `<tr class="loading-row"><td colspan="8">❌ Failed to load orders</td></tr>`;
+            console.error('Load orders error:', err);
+            document.getElementById('ordersBody').innerHTML = `<tr class="loading-row"><td colspan="8">❌ Failed to load orders: ${err.message}</td></tr>`;
         }
     }
 
@@ -532,41 +533,52 @@
     }
 
     // ============ TABLE ============
+    function normalize(o) {
+        return {
+            ...o,
+            customerName: o.customerName || (o.customer && o.customer.fullName) || 'Guest',
+            customerEmail: o.customerEmail || (o.customer && o.customer.email) || '',
+            customerPhone: o.customerPhone || (o.customer && o.customer.phone) || '',
+            customerAddress: o.customerAddress || (o.customer && o.customer.address) || '',
+            city: o.city || (o.customer && o.customer.city) || '',
+            state: o.state || (o.customer && o.customer.state) || '',
+            pincode: o.pincode || (o.customer && o.customer.pincode) || '',
+            total: o.total || o.grandTotal || 0,
+            paymentMethod: o.paymentMethod || 'Cash on Delivery',
+            status: o.status || 'Processing',
+            orderId: o.orderId || o._id,
+            orderDate: o.orderDate || new Date(o.createdAt).toLocaleString('en-IN'),
+            items: o.items || [],
+            trackingEvents: o.trackingEvents || [],
+            estimatedDelivery: o.estimatedDelivery || '5-7 days'
+        };
+    }
+
     function renderTable(orders) {
         const tbody = document.getElementById('ordersBody');
         if (!orders.length) {
-            tbody.innerHTML = `<tr class="loading-row"><td colspan="8"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:10px;opacity:0.3"></i>No orders found</td></tr>`;
+            tbody.innerHTML = '<tr class="loading-row"><td colspan="8"><i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:10px;opacity:0.3"></i>No orders found</td></tr>';
             return;
         }
-        tbody.innerHTML = orders.map(o => {
-            const statusClass = 'sp-' + o.status.replace(/ /g, '');
-            return `<tr>
-                <td><div class="order-id">${o.orderId}</div></td>
-                <td>
-                    <div class="customer-name">${o.customerName}</div>
-                    <div class="customer-email">${o.customerEmail}</div>
-                    <div style="font-size:11px;color:var(--muted);margin-top:2px;">📞 ${o.customerPhone || '—'}</div>
-                </td>
-                <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${o.orderDate}</td>
-                <td><span class="items-count">${o.items.reduce((s,i)=>s+i.qty,0)} items</span></td>
-                <td><div class="amount">₹${o.total.toLocaleString('en-IN')}</div></td>
-                <td><span class="pay-badge">${getPayIcon(o.paymentMethod)} ${o.paymentMethod}</span></td>
-                <td>
-                    <select class="status-select" data-id="${o.orderId}" onchange="updateStatus('${o.orderId}', this.value)">
-                        ${['Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(s => `<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
-                    </select>
-                </td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn-view" onclick='openDetail(${JSON.stringify(o).replace(/'/g,"&#39;")})'>
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                        <button class="btn-del" onclick='deleteOrder("${o.orderId}")'>
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>`;
+        tbody.innerHTML = orders.map(function(raw) {
+            const o = normalize(raw);
+            const itemCount = o.items.reduce(function(s,i){ return s + (i.qty || i.quantity || 1); }, 0);
+            return '<tr>' +
+                '<td><div class="order-id">' + o.orderId + '</div></td>' +
+                '<td><div class="customer-name">' + o.customerName + '</div>' +
+                '<div class="customer-email">' + o.customerEmail + '</div>' +
+                '<div style="font-size:11px;color:var(--muted);margin-top:2px;">📞 ' + o.customerPhone + '</div></td>' +
+                '<td style="font-size:12px;color:var(--muted);white-space:nowrap;">' + o.orderDate + '</td>' +
+                '<td><span class="items-count">' + itemCount + ' items</span></td>' +
+                '<td><div class="amount">₹' + Number(o.total).toLocaleString("en-IN") + '</div></td>' +
+                '<td><span class="pay-badge">' + getPayIcon(o.paymentMethod) + ' ' + o.paymentMethod + '</span></td>' +
+                '<td><select class="status-select" onchange="updateStatus('' + o.orderId + '', this.value)">' +
+                ['Processing','Shipped','Out for Delivery','Delivered','Cancelled'].map(function(s){ return '<option ' + (o.status===s?'selected':'') + '>' + s + '</option>'; }).join('') +
+                '</select></td>' +
+                '<td><div class="action-btns">' +
+                '<button class="btn-view" onclick="openDetail(' + JSON.stringify(o).replace(/"/g,"&quot;") + ')"><i class="fas fa-eye"></i> View</button>' +
+                '<button class="btn-del" onclick="deleteOrder('' + o.orderId + '')"><i class="fas fa-trash"></i></button>' +
+                '</div></td></tr>';
         }).join('');
     }
 
