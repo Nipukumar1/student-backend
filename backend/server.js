@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 dotenv.config();
 
@@ -12,9 +13,13 @@ app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE'], allowedHeade
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Frontend path
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
+
+// ✅ Register ALL models FIRST before routes
+require('./models/User');
+require('./models/Order');
+require('./models/Product');
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -26,24 +31,15 @@ mongoose.connect(process.env.MONGODB_URI)
 
 async function createDefaultAdmin() {
     try {
-        const User = require('./models/User');
-        const bcrypt = require('bcryptjs');
+        const User = mongoose.model('User');
         const adminEmail = process.env.ADMIN_EMAIL;
         const adminPassword = process.env.ADMIN_PASSWORD;
         if (!adminEmail || !adminPassword) return;
 
-        const existing = await User.findOne({ email: adminEmail }).select('+password');
+        const existing = await User.findOne({ email: adminEmail });
         if (!existing) {
-            // Create with pre-hashed password
             const hashedPassword = await bcrypt.hash(adminPassword, 10);
-            const admin = new (require('./models/User'))({
-                name: 'Admin',
-                email: adminEmail,
-                password: hashedPassword,
-                role: 'admin'
-            });
-            // Save without triggering pre-save hook double hash
-            await mongoose.model('User').collection.insertOne({
+            await User.collection.insertOne({
                 name: 'Admin',
                 email: adminEmail,
                 password: hashedPassword,
@@ -54,9 +50,11 @@ async function createDefaultAdmin() {
             console.log(`✅ Admin created: ${adminEmail}`);
         } else {
             if (existing.role !== 'admin') {
-                await mongoose.model('User').updateOne({ email: adminEmail }, { role: 'admin' });
+                await User.updateOne({ email: adminEmail }, { role: 'admin' });
+                console.log(`✅ Admin role updated: ${adminEmail}`);
+            } else {
+                console.log(`✅ Admin exists: ${adminEmail}`);
             }
-            console.log(`✅ Admin exists: ${adminEmail}`);
         }
     } catch (err) {
         console.error('⚠️ Admin setup error:', err.message);
@@ -75,7 +73,7 @@ app.post('/api/make-admin', async (req, res) => {
         const { email, secret } = req.body;
         if (secret !== process.env.ADMIN_SECRET)
             return res.status(403).json({ message: 'Wrong secret' });
-        const User = require('./models/User');
+        const User = mongoose.model('User');
         const user = await User.findOneAndUpdate({ email }, { role: 'admin' }, { new: true });
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json({ message: `${user.name} is now admin` });
