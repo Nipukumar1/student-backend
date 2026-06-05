@@ -1,16 +1,17 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const Order = require('../models/Order');  // Direct require
+const User = require('../models/User');    // Direct require
 const router = express.Router();
 
-// ---- inline auth middleware ----
+// ---- auth middleware ----
 function protect(req, res, next) {
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer '))
         return res.status(401).json({ message: 'Not authorized' });
     try {
         const decoded = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
-        const User = mongoose.model('User');
         User.findById(decoded.id).select('-password').then(user => {
             if (!user) return res.status(401).json({ message: 'User not found' });
             req.user = user;
@@ -29,7 +30,6 @@ function adminOnly(req, res, next) {
 // Place new order
 router.post('/', protect, async (req, res) => {
     try {
-        const Order = mongoose.model('Order');
         const {
             customerName, customerEmail, customerPhone,
             customerAddress, city, state, pincode, country,
@@ -39,7 +39,7 @@ router.post('/', protect, async (req, res) => {
         if (!items || !items.length)
             return res.status(400).json({ message: 'No items in order' });
 
-        const order = await Order.create({
+        const order = new Order({
             user: req.user._id,
             customerName, customerEmail, customerPhone,
             customerAddress, city, state, pincode, country,
@@ -49,6 +49,7 @@ router.post('/', protect, async (req, res) => {
             estimatedDelivery: new Date(Date.now() + 5 * 86400000).toLocaleDateString('en-IN')
         });
 
+        await order.save();
         res.status(201).json({ message: 'Order placed successfully', order });
     } catch (err) {
         console.error('Order error:', err.message);
@@ -59,7 +60,6 @@ router.post('/', protect, async (req, res) => {
 // Get my orders
 router.get('/my', protect, async (req, res) => {
     try {
-        const Order = mongoose.model('Order');
         const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
         res.json({ orders });
     } catch (err) {
@@ -70,7 +70,6 @@ router.get('/my', protect, async (req, res) => {
 // ADMIN - Get ALL orders
 router.get('/admin/all', protect, adminOnly, async (req, res) => {
     try {
-        const Order = mongoose.model('Order');
         const { status, search } = req.query;
         let filter = {};
         if (status && status !== 'all') filter.status = status;
@@ -102,7 +101,6 @@ router.get('/admin/all', protect, adminOnly, async (req, res) => {
 // ADMIN - Update status
 router.put('/admin/:orderId/status', protect, adminOnly, async (req, res) => {
     try {
-        const Order = mongoose.model('Order');
         const { status } = req.body;
         const order = await Order.findOne({ orderId: req.params.orderId });
         if (!order) return res.status(404).json({ message: 'Order not found' });
@@ -118,7 +116,6 @@ router.put('/admin/:orderId/status', protect, adminOnly, async (req, res) => {
 // ADMIN - Delete order
 router.delete('/admin/:orderId', protect, adminOnly, async (req, res) => {
     try {
-        const Order = mongoose.model('Order');
         await Order.findOneAndDelete({ orderId: req.params.orderId });
         res.json({ message: 'Order deleted' });
     } catch (err) {
@@ -129,7 +126,6 @@ router.delete('/admin/:orderId', protect, adminOnly, async (req, res) => {
 // Get single order
 router.get('/:orderId', protect, async (req, res) => {
     try {
-        const Order = mongoose.model('Order');
         const order = await Order.findOne({ orderId: req.params.orderId, user: req.user._id });
         if (!order) return res.status(404).json({ message: 'Order not found' });
         res.json({ order });
