@@ -3,248 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfinityStore — Login</title>
+    <title>InfinityStore — Shop Without Limits</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --ink: #0f0f0f;
-            --paper: #fafaf7;
-            --accent: #e84c1e;
-            --muted: #6b6b6b;
-            --border: #e0ddd8;
-            --card: #ffffff;
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--accent:#e84c1e;--ink:#0f0f0f;--paper:#fafaf7;--muted:#6b6b6b;--border:#e0ddd8}
+        html,body{height:100%;overflow:hidden}
+        body{font-family:'DM Sans',sans-serif;background:#000;position:relative}
+
+        /* FULL BG IMAGE */
+        .bg-img{
+            position:fixed;inset:0;z-index:0;
+            background:url('https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=1920') center/cover no-repeat;
+            filter:brightness(0.35);
         }
-        body {
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            font-family: 'DM Sans', sans-serif;
-            background: var(--paper);
+
+        /* PARTICLES */
+        canvas#particles{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+        /* MAIN LAYOUT */
+        .page{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+
+        /* CENTER CARD */
+        .login-card{
+            width:100%;max-width:460px;
+            background:rgba(255,255,255,0.07);
+            backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px);
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:28px;
+            padding:48px 44px;
+            animation:fadeUp 0.7s ease both;
         }
-        .left-panel {
-            background: var(--ink);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 60px;
-            position: relative;
-            overflow: hidden;
+        @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+        /* BRAND */
+        .brand{display:flex;align-items:center;gap:14px;margin-bottom:36px;justify-content:center}
+        .brand-icon{width:52px;height:52px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(232,76,30,0.5);animation:iconPulse 2s infinite}
+        @keyframes iconPulse{0%,100%{box-shadow:0 0 20px rgba(232,76,30,0.5)}50%{box-shadow:0 0 40px rgba(232,76,30,0.8)}}
+        .brand-icon i{color:#fff;font-size:24px}
+        .brand-name{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff}
+
+        /* ANIMATED TITLE */
+        .anim-title{text-align:center;margin-bottom:8px;height:44px;overflow:hidden}
+        .anim-title .word{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#fff;display:block;animation:wordSlide 0.5s ease both}
+        @keyframes wordSlide{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+        .form-sub{text-align:center;color:rgba(255,255,255,0.55);font-size:14px;margin-bottom:32px}
+
+        /* FIELDS */
+        .field{margin-bottom:16px}
+        .field label{display:block;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px}
+        .field-wrap{position:relative}
+        .field-wrap i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.4);font-size:14px;transition:color 0.2s}
+        .field-wrap input{
+            width:100%;padding:14px 16px 14px 46px;
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:14px;
+            font-size:15px;font-family:'DM Sans',sans-serif;
+            color:#fff;outline:none;
+            transition:all 0.2s;
         }
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            width: 500px; height: 500px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(232,76,30,0.3) 0%, transparent 70%);
-            bottom: -100px; right: -100px;
+        .field-wrap input::placeholder{color:rgba(255,255,255,0.3)}
+        .field-wrap input:focus{background:rgba(255,255,255,0.12);border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,76,30,0.2)}
+        .field-wrap input:focus + i, .field-wrap:focus-within i{color:var(--accent)}
+
+        /* BUTTON */
+        .submit-btn{
+            width:100%;padding:15px;margin-top:8px;
+            background:var(--accent);color:#fff;border:none;
+            border-radius:14px;font-size:16px;font-weight:700;
+            font-family:'Syne',sans-serif;cursor:pointer;
+            position:relative;overflow:hidden;
+            transition:transform 0.15s,box-shadow 0.15s;
+            box-shadow:0 4px 20px rgba(232,76,30,0.4);
         }
-        .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 60px; }
-        .brand-icon {
-            width: 48px; height: 48px;
-            background: var(--accent);
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .brand-icon i { color: white; font-size: 22px; }
-        .brand-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: white; }
-        .hero-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 52px;
-            font-weight: 800;
-            color: white;
-            line-height: 1.1;
-            margin-bottom: 24px;
-        }
-        .hero-title span { color: var(--accent); }
-        .hero-sub { color: #888; font-size: 16px; line-height: 1.7; max-width: 400px; }
-        .right-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 60px 40px;
-        }
-        .form-box { width: 100%; max-width: 400px; }
-        .form-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
-        .form-sub { color: var(--muted); margin-bottom: 36px; }
-        .field { margin-bottom: 20px; }
-        .field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 8px; letter-spacing: 0.03em; }
-        .field input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: 'DM Sans', sans-serif;
-            background: white;
-            transition: border-color 0.2s;
-            outline: none;
-        }
-        .field input:focus { border-color: var(--accent); }
-        .field-icon { position: relative; }
-        .field-icon i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-        .field-icon input { padding-left: 44px; }
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'Syne', sans-serif;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(232,76,30,0.35); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .toggle-link { text-align: center; margin-top: 24px; color: var(--muted); font-size: 14px; }
-        .toggle-link a { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
-        .error-msg { background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 16px; display: none; }
-        .error-msg.show { display: block; }
-        .hidden { display: none; }
-        @media (max-width: 768px) {
-            body { grid-template-columns: 1fr; }
-            .left-panel { display: none; }
-            .right-panel { padding: 40px 24px; }
-        }
+        .submit-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.5s}
+        .submit-btn:hover::after{transform:translateX(100%)}
+        .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(232,76,30,0.6)}
+        .submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+        /* TOGGLE */
+        .toggle-link{text-align:center;margin-top:20px;color:rgba(255,255,255,0.5);font-size:14px}
+        .toggle-link a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
+        .toggle-link a:hover{text-decoration:underline}
+
+        /* ERROR */
+        .error-msg{background:rgba(220,38,38,0.15);color:#fca5a5;border:1px solid rgba(220,38,38,0.3);padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none}
+        .error-msg.show{display:block;animation:shake 0.4s ease}
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+        .hidden{display:none}
+
+        /* SPINNER */
+        .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp 0.6s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        /* SUCCESS */
+        .success-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+        .success-overlay.show{display:flex}
+        .success-box{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:24px;padding:48px;text-align:center;animation:popIn 0.4s ease}
+        @keyframes popIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+        .success-icon{font-size:56px;margin-bottom:16px;display:block}
+        .success-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;margin-bottom:8px}
+        .success-sub{color:rgba(255,255,255,0.5);font-size:14px}
+
+        /* BOTTOM BADGES */
+        .badges{display:flex;justify-content:center;gap:20px;margin-top:28px}
+        .badge{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.35);font-size:12px}
+        .badge i{font-size:14px;color:rgba(255,255,255,0.25)}
+
+        @media(max-width:520px){.login-card{padding:36px 24px;margin:16px}}
     </style>
 </head>
 <body>
-    <div class="left-panel">
+
+<div class="bg-img"></div>
+<canvas id="particles"></canvas>
+
+<div class="page">
+    <div class="login-card">
+        <!-- BRAND -->
         <div class="brand">
             <div class="brand-icon"><i class="fas fa-infinity"></i></div>
             <span class="brand-name">InfinityStore</span>
         </div>
-        <h1 class="hero-title">Shop<br>Without<br><span>Limits.</span></h1>
-        <p class="hero-sub">500+ products across 10 categories. Free shipping, real-time tracking, and a seamless checkout experience.</p>
-    </div>
-    <div class="right-panel">
-        <div class="form-box">
-            <!-- Login -->
-            <div id="loginSection">
-                <h2 class="form-title">Welcome back</h2>
-                <p class="form-sub">Sign in to your account</p>
-                <div class="error-msg" id="loginError"></div>
-                <div class="field field-icon">
-                    <label>Email Address</label>
+
+        <!-- LOGIN SECTION -->
+        <div id="loginSection">
+            <div class="anim-title"><span class="word" id="animWord">Welcome back 👋</span></div>
+            <p class="form-sub">Sign in to continue shopping</p>
+            <div class="error-msg" id="loginError"></div>
+            <div class="field">
+                <label>Email Address</label>
+                <div class="field-wrap">
                     <i class="fas fa-envelope"></i>
                     <input type="email" id="loginEmail" placeholder="you@example.com">
                 </div>
-                <div class="field field-icon">
-                    <label>Password</label>
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <div class="field-wrap">
                     <i class="fas fa-lock"></i>
                     <input type="password" id="loginPassword" placeholder="••••••••">
                 </div>
-                <button class="submit-btn" id="loginBtn" onclick="login()">Sign In</button>
-                <div class="toggle-link">Don't have an account? <a onclick="toggleForm(false)">Register</a></div>
             </div>
-            <!-- Register -->
-            <div id="registerSection" class="hidden">
-                <h2 class="form-title">Create account</h2>
-                <p class="form-sub">Join InfinityStore today</p>
-                <div class="error-msg" id="registerError"></div>
-                <div class="field field-icon">
-                    <label>Full Name</label>
+            <button class="submit-btn" id="loginBtn">Sign In</button>
+            <div class="toggle-link">No account? <a onclick="toggleForm(false)">Register free →</a></div>
+        </div>
+
+        <!-- REGISTER SECTION -->
+        <div id="registerSection" class="hidden">
+            <div class="anim-title"><span class="word">Create account 🎉</span></div>
+            <p class="form-sub">Join InfinityStore today — it's free</p>
+            <div class="error-msg" id="registerError"></div>
+            <div class="field">
+                <label>Full Name</label>
+                <div class="field-wrap">
                     <i class="fas fa-user"></i>
                     <input type="text" id="regName" placeholder="Your name">
                 </div>
-                <div class="field field-icon">
-                    <label>Email Address</label>
+            </div>
+            <div class="field">
+                <label>Email Address</label>
+                <div class="field-wrap">
                     <i class="fas fa-envelope"></i>
                     <input type="email" id="regEmail" placeholder="you@example.com">
                 </div>
-                <div class="field field-icon">
-                    <label>Password</label>
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <div class="field-wrap">
                     <i class="fas fa-lock"></i>
                     <input type="password" id="regPassword" placeholder="Min 6 characters">
                 </div>
-                <button class="submit-btn" id="registerBtn" onclick="register()">Create Account</button>
-                <div class="toggle-link">Already have an account? <a onclick="toggleForm(true)">Sign in</a></div>
             </div>
+            <button class="submit-btn" id="registerBtn">Create Account</button>
+            <div class="toggle-link">Have account? <a onclick="toggleForm(true)">Sign in →</a></div>
+        </div>
+
+        <!-- BADGES -->
+        <div class="badges">
+            <div class="badge"><i class="fas fa-shield-alt"></i> Secure</div>
+            <div class="badge"><i class="fas fa-truck"></i> Free shipping</div>
+            <div class="badge"><i class="fas fa-star"></i> 4.9 Rating</div>
         </div>
     </div>
+</div>
 
-    <script>
-        const API = 'https://student-backend-detj.onrender.com';  // same origin — backend serves frontend
+<!-- SUCCESS -->
+<div class="success-overlay" id="successOverlay">
+    <div class="success-box">
+        <span class="success-icon">✅</span>
+        <div class="success-title">Login Successful!</div>
+        <div class="success-sub">Redirecting to store...</div>
+    </div>
+</div>
 
-        function toggleForm(showLogin) {
-            document.getElementById('loginSection').classList.toggle('hidden', !showLogin);
-            document.getElementById('registerSection').classList.toggle('hidden', showLogin);
-        }
+<script>
+var API = 'https://student-backend-detj.onrender.com';
 
-        async function login() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const errDiv = document.getElementById('loginError');
-            const btn = document.getElementById('loginBtn');
-            errDiv.classList.remove('show');
+if (localStorage.getItem('isLoggedIn') === 'true') window.location.href = 'dashboard.html';
 
-            if (!email || !password) { errDiv.textContent = 'Please fill all fields'; errDiv.classList.add('show'); return; }
+// PARTICLES
+(function(){
+    var c = document.getElementById('particles');
+    var ctx = c.getContext('2d');
+    var W, H, particles = [];
+    function resize(){ W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    for(var i=0;i<60;i++){
+        particles.push({
+            x: Math.random()*2000,
+            y: Math.random()*2000,
+            r: Math.random()*2+0.5,
+            dx: (Math.random()-0.5)*0.4,
+            dy: (Math.random()-0.5)*0.4,
+            o: Math.random()*0.4+0.1
+        });
+    }
+    function draw(){
+        ctx.clearRect(0,0,W,H);
+        particles.forEach(function(p){
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fillStyle='rgba(255,255,255,'+p.o+')';
+            ctx.fill();
+            p.x+=p.dx; p.y+=p.dy;
+            if(p.x<0||p.x>W) p.dx*=-1;
+            if(p.y<0||p.y>H) p.dy*=-1;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
 
-            btn.disabled = true; btn.textContent = 'Signing in...';
-            try {
-                const res = await fetch(`${API}/api/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-                if (!res.ok) { errDiv.textContent = data.message || 'Login failed'; errDiv.classList.add('show'); return; }
+// ANIMATED WORDS
+var words = ['Welcome back 👋', 'Great to see you!', 'Shop Without Limits', 'Sign in to continue'];
+var wi = 0;
+function cycleWords(){
+    if(document.getElementById('loginSection').classList.contains('hidden')) return;
+    wi = (wi+1) % words.length;
+    var el = document.getElementById('animWord');
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.textContent = words[wi];
+    el.style.animation = 'wordSlide 0.5s ease both';
+}
+setInterval(cycleWords, 2500);
 
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', data.user.name);
-                localStorage.setItem('userEmail', data.user.email);
-                localStorage.setItem('userRole', data.user.role);
-                localStorage.setItem('userId', data.user.id);
+// TOGGLE FORM
+function toggleForm(showLogin){
+    document.getElementById('loginSection').classList.toggle('hidden', !showLogin);
+    document.getElementById('registerSection').classList.toggle('hidden', showLogin);
+}
 
-                window.location.href = 'dashboard.html';
-            } catch (err) {
-                errDiv.textContent = 'Server error. Try again.'; errDiv.classList.add('show');
-            } finally { btn.disabled = false; btn.textContent = 'Sign In'; }
-        }
+// LOGIN
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPassword').addEventListener('keyup', function(e){ if(e.key==='Enter') doLogin(); });
 
-        async function register() {
-            const name = document.getElementById('regName').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const errDiv = document.getElementById('registerError');
-            const btn = document.getElementById('registerBtn');
-            errDiv.classList.remove('show');
+function doLogin(){
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+    var errDiv = document.getElementById('loginError');
+    var btn = document.getElementById('loginBtn');
+    errDiv.classList.remove('show');
+    if(!email||!password){ errDiv.textContent='Please fill all fields'; errDiv.classList.add('show'); return; }
+    btn.disabled=true; btn.innerHTML='<span class="spin"></span>Signing in...';
+    fetch(API+'/api/auth/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:email,password:password})
+    })
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+    .then(function(r){
+        btn.disabled=false; btn.textContent='Sign In';
+        if(!r.ok){ errDiv.textContent=r.d.message||'Login failed'; errDiv.classList.add('show'); return; }
+        saveUser(r.d);
+        document.getElementById('successOverlay').classList.add('show');
+        setTimeout(function(){ window.location.href='dashboard.html'; },1200);
+    })
+    .catch(function(e){
+        btn.disabled=false; btn.textContent='Sign In';
+        errDiv.textContent='Server error. Try again.'; errDiv.classList.add('show');
+    });
+}
 
-            if (!name || !email || !password) { errDiv.textContent = 'Please fill all fields'; errDiv.classList.add('show'); return; }
-            if (password.length < 6) { errDiv.textContent = 'Password must be 6+ characters'; errDiv.classList.add('show'); return; }
+// REGISTER
+document.getElementById('registerBtn').addEventListener('click', doRegister);
+document.getElementById('regPassword').addEventListener('keyup', function(e){ if(e.key==='Enter') doRegister(); });
 
-            btn.disabled = true; btn.textContent = 'Creating account...';
-            try {
-                const res = await fetch(`${API}/api/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-                const data = await res.json();
-                if (!res.ok) { errDiv.textContent = data.message || 'Registration failed'; errDiv.classList.add('show'); return; }
+function doRegister(){
+    var name=document.getElementById('regName').value.trim();
+    var email=document.getElementById('regEmail').value.trim();
+    var password=document.getElementById('regPassword').value;
+    var errDiv=document.getElementById('registerError');
+    var btn=document.getElementById('registerBtn');
+    errDiv.classList.remove('show');
+    if(!name||!email||!password){ errDiv.textContent='Please fill all fields'; errDiv.classList.add('show'); return; }
+    if(password.length<6){ errDiv.textContent='Password must be 6+ characters'; errDiv.classList.add('show'); return; }
+    btn.disabled=true; btn.innerHTML='<span class="spin"></span>Creating account...';
+    fetch(API+'/api/auth/register',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:name,email:email,password:password})
+    })
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+    .then(function(r){
+        btn.disabled=false; btn.textContent='Create Account';
+        if(!r.ok){ errDiv.textContent=r.d.message||'Registration failed'; errDiv.classList.add('show'); return; }
+        saveUser(r.d);
+        document.getElementById('successOverlay').classList.add('show');
+        setTimeout(function(){ window.location.href='dashboard.html'; },1200);
+    })
+    .catch(function(e){
+        btn.disabled=false; btn.textContent='Create Account';
+        errDiv.textContent='Server error. Try again.'; errDiv.classList.add('show');
+    });
+}
 
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', data.user.name);
-                localStorage.setItem('userEmail', data.user.email);
-                localStorage.setItem('userRole', data.user.role);
-                localStorage.setItem('userId', data.user.id);
-
-                window.location.href = 'dashboard.html';
-            } catch (err) {
-                errDiv.textContent = 'Server error. Try again.'; errDiv.classList.add('show');
-            } finally { btn.disabled = false; btn.textContent = 'Create Account'; }
-        }
-
-        // If already logged in, redirect
-        if (localStorage.getItem('isLoggedIn')) window.location.href = 'dashboard.html';
-    </script>
+function saveUser(data){
+    localStorage.setItem('token',data.token);
+    localStorage.setItem('isLoggedIn','true');
+    localStorage.setItem('userName',data.user.name);
+    localStorage.setItem('userEmail',data.user.email);
+    localStorage.setItem('userRole',data.user.role);
+    localStorage.setItem('userId',data.user.id);
+}
+</script>
 </body>
 </html>
