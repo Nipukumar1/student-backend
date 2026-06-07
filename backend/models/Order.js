@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const orderItemSchema = new mongoose.Schema({
-    productId: { type: Number },
+    productId: { type: mongoose.Schema.Types.Mixed }, // Number ya String dono accept karo
     name: { type: String, required: true },
     price: { type: Number, required: true },
     qty: { type: Number, required: true },
@@ -42,7 +42,6 @@ const orderSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Auto-generate orderId before saving
 orderSchema.pre('save', function(next) {
     if (!this.orderId) {
         this.orderId = 'INF' + Date.now().toString().slice(-8);
